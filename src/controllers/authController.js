@@ -30,7 +30,6 @@ export async function signUp(req, res) {
 
 export async function signIn(req, res) {
   const user = res.locals.user;
-  console.log(user.id);
   const token = uuidV4();
 
   try {

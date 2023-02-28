@@ -5,6 +5,14 @@ export async function createShortUrl(req, res) {
   const { url } = req.body;
   const user = res.locals.user;
   const idGenerator = customAlphabet("1234567890abcdef", 8);
+  const nanoidUrl = idGenerator();
+
+  const checkNanoidExists = await connection.query(
+    `select "shortUrl" from urls where "shortUrl"=$1`,
+    [nanoidUrl]
+  );
+  if (checkNanoidExists.rowCount > 0)
+    return res.status(404).send("this shortUrl already exists");
 
   try {
     await connection.query(
@@ -12,10 +20,18 @@ export async function createShortUrl(req, res) {
     INSERT INTO urls(url, "shortUrl", "userId", views) 
     VALUES ($1, $2, $3, $4);
     `,
-      [url, idGenerator(), user.id, 0]
+      [url, nanoidUrl, user.id, 0]
     );
 
-    res.status(201).send("url encurtada");
+    const shortenUrl = await connection.query(
+      `
+    select * from urls where "shortUrl"=$1`,
+      [nanoidUrl]
+    );
+
+    const { id, shortUrl } = shortenUrl.rows[0];
+
+    res.status(201).send({ id, shortUrl });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -25,15 +41,14 @@ export async function getUrlById(req, res) {
   const { id } = req.params;
 
   try {
-    const urlData = await connection.query("SELECT * FROM urls WHERE id=$1", [
-      id,
-    ]);
+    const urlData = await connection.query(
+      `SELECT id, "shortUrl", url FROM urls WHERE id=$1`,
+      [id]
+    );
 
     if (urlData.rowCount === 0) return res.sendStatus(404);
 
-    const { shortUrl, url, ...rest } = urlData.rows[0];
-
-    res.send({ id, shortUrl, url });
+    res.send(urlData.rows[0]);
   } catch (error) {
     console.error(error);
     res.sendStatus(500);
