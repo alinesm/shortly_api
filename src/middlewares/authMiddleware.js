@@ -43,7 +43,7 @@ export async function signInBodyValidation(req, res, next) {
 export async function authRoutesValidation(req, res, next) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
-  console.log(token);
+
   if (!token) return res.status(401).send("Não autorizado");
 
   try {
@@ -52,7 +52,7 @@ export async function authRoutesValidation(req, res, next) {
       [token]
     );
     if (!checksession) return res.status(401).send("Não autorizado");
-    console.log(checksession.rows);
+
     const checkUser = await connection.query(
       "SELECT * FROM users WHERE id=$1",
       [checksession.rows[0].userId]

@@ -96,41 +96,26 @@ export async function getUserHistory(req, res) {
   const user = res.locals.user;
   try {
     const userMainData = await connection.query(
-      `select users.id, users.name, sum(urls.views) as "visitCount" 
-      from users 
-      join urls 
-      on users.id = urls."userId" 
-      where users.id=$1
-      group by users.id, users.name;
+      `select sum(urls.views) as "visitCount" 
+      from urls
+      where "userId"=$1;
       `,
       [user.id]
     );
 
     const userLinksData = await connection.query(
       `
-    select id, "shortUrl", url, sum(urls.views) as "visitCount"
+    select id, "shortUrl", url, views as "visitCount"
     from urls
-    where urls."userId"=$1
-    group by id, "shortUrl", url;`,
+    where "userId"=$1;`,
       [user.id]
     );
 
-    const { id, name, visitCount } = userMainData.rows[0];
-
-    const userLinksDataMap = userLinksData.rows.map((obj2) => {
-      return {
-        id: obj2.id,
-        shortUrl: obj2.shortUrl,
-        url: obj2.url,
-        visitCount: obj2.visitCount,
-      };
-    });
-
     const combinedArr = {
-      id,
-      name,
-      visitCount,
-      shortenedUrls: userLinksDataMap,
+      id: user.id,
+      name: user.name,
+      visitCount: userMainData.rows[0].visitCount,
+      shortenedUrls: userLinksData.rows,
     };
 
     res.send(combinedArr);
