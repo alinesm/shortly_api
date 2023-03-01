@@ -87,21 +87,21 @@ export async function deleteUrl(req, res) {
 
   try {
     const checkUser = await connection.query(
-      'SELECT * FROM urls WHERE "userId"=$1 AND id=$2',
-      [user.id, id]
+      'SELECT * FROM urls WHERE "userId"=$1',
+      [user.id]
     );
 
-    if (checkUser.rowCount === 0) return res.sendStatus(401);
+    if (checkUser.rowCount === 0) return res.status(401).send("user not found");
 
     const checkUrl = await connection.query("SELECT * FROM urls WHERE id=$1", [
       id,
     ]);
-
-    if (checkUrl.rowCount === 0) return res.sendStatus(404);
+    console.log(checkUrl.rows);
+    if (checkUrl.rowCount === 0) return res.status(404).send("url not found");
 
     await connection.query("DELETE FROM urls WHERE id=$1", [id]);
 
-    res.sendStatus(204);
+    res.status(204).send("url deleted");
   } catch (error) {
     res.status(500).send(error.message);
   }
