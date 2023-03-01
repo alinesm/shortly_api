@@ -13,32 +13,32 @@ export function validateSchema(schema) {
   };
 }
 
-export async function signInBodyValidation(req, res, next) {
-  const { email, password } = req.body;
+// export async function signInBodyValidation(req, res, next) {
+//   const { email, password } = req.body;
 
-  try {
-    const checkUser = await connection.query(
-      "SELECT * FROM users WHERE email=$1",
-      [email]
-    );
+//   try {
+//     const checkUser = await connection.query(
+//       "SELECT * FROM users WHERE email=$1",
+//       [email]
+//     );
 
-    if (checkUser.rowCount === 0) return res.status(401).send("Não autorizado");
+//     if (checkUser.rowCount === 0) return res.status(401).send("Não autorizado");
 
-    const passwordIsOk = bcrypt.compareSync(
-      password,
-      checkUser.rows[0].password
-    );
-    if (!passwordIsOk) return res.status(401).send("Não autorizado");
+//     const passwordIsOk = bcrypt.compareSync(
+//       password,
+//       checkUser.rows[0].password
+//     );
+//     if (!passwordIsOk) return res.status(401).send("Não autorizado");
 
-    const user = checkUser.rows[0];
-    res.locals.user = user;
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Houve um problema no servidor");
-  }
+//     const user = checkUser.rows[0];
+//     res.locals.user = user;
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Houve um problema no servidor");
+//   }
 
-  next();
-}
+//   next();
+// }
 
 export async function authRoutesValidation(req, res, next) {
   const { authorization } = req.headers;

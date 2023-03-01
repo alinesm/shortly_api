@@ -29,16 +29,31 @@ export async function signUp(req, res) {
 }
 
 export async function signIn(req, res) {
-  const user = res.locals.user;
+  const { email, password } = req.body;
+  // const user = res.locals.user;
+
   const token = uuidV4();
 
   try {
+    const checkUser = await connection.query(
+      "SELECT * FROM users WHERE email=$1",
+      [email]
+    );
+
+    if (checkUser.rowCount === 0) return res.status(401).send("Não autorizado");
+
+    const passwordIsOk = bcrypt.compareSync(
+      password,
+      checkUser.rows[0].password
+    );
+    if (!passwordIsOk) return res.status(401).send("Não autorizado");
+
     await connection.query(
       `
     INSERT INTO sessions ("userId", token) 
     VALUES ($1, $2);
     `,
-      [user.id, token]
+      [checkUser.rows[0].id, token]
     );
 
     res.send({ token: token });
