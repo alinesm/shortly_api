@@ -86,18 +86,14 @@ export async function deleteUrl(req, res) {
   const { id } = req.params;
 
   try {
-    const checkUser = await connection.query(
-      'SELECT * FROM urls WHERE "userId"=$1',
-      [user.id]
-    );
-
-    if (checkUser.rowCount === 0) return res.status(401).send("user not found");
-
     const checkUrl = await connection.query("SELECT * FROM urls WHERE id=$1", [
       id,
     ]);
-    console.log(checkUrl.rows);
+
     if (checkUrl.rowCount === 0) return res.status(404).send("url not found");
+
+    if (checkUrl.rows[0].userId !== user.id)
+      return res.status(401).send("user not found");
 
     await connection.query("DELETE FROM urls WHERE id=$1", [id]);
 
