@@ -62,7 +62,7 @@ CREATE TABLE public.urls (
     "shortUrl" character varying(8) NOT NULL,
     "userId" integer NOT NULL,
     views integer DEFAULT 0 NOT NULL,
-    "createdAt" date DEFAULT now() NOT NULL
+     "createdAt" timestamp DEFAULT now() NOT NULL
 );
 
 
@@ -95,7 +95,7 @@ CREATE TABLE public.users (
     name character varying(100) NOT NULL,
     email text NOT NULL,
     password text NOT NULL,
-    "createdAt" date DEFAULT now() NOT NULL
+    "createdAt" timestamp DEFAULT now() NOT NULL
 );
 
 

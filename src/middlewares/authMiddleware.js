@@ -44,15 +44,15 @@ export async function authRoutesValidation(req, res, next) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
 
-  if (!token) return res.status(401).send("Não autorizado");
-
   try {
     const checksession = await connection.query(
       "SELECT * FROM sessions WHERE token=$1",
       [token]
     );
-    if (!checksession) return res.status(401).send("Não autorizado");
 
+    if (checksession.rowCount === 0) {
+      return res.status(401).send("token nao encontrado");
+    }
     const checkUser = await connection.query(
       "SELECT * FROM users WHERE id=$1",
       [checksession.rows[0].userId]
@@ -60,10 +60,9 @@ export async function authRoutesValidation(req, res, next) {
     if (!checkUser) return res.status(401).send("Não autorizado");
 
     const user = checkUser.rows[0];
-    console.log(user);
     res.locals.user = user;
   } catch (error) {
-    console.erro(error);
+    console.log(error);
     res.status(500).send("Houve um problema no servidor");
   }
 
